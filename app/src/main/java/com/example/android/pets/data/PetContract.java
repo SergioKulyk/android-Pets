@@ -3,11 +3,14 @@ package com.example.android.pets.data;
 
 import android.provider.BaseColumns;
 
-public class PetContract {
+public final class PetContract {
 
+    // To prevent someone from accidentally instantiating the contract class,
+    // give it an empty constructor.
     public PetContract() {
     }
 
+    /* Inner class that defines the table contents */
     public static final class PetEntry implements BaseColumns {
         public final static String TABLE_NAME = "pets";
 
