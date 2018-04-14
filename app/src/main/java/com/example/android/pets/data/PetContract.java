@@ -27,12 +27,12 @@ public final class PetContract {
         public final static int GENDER_MALE = 1;
         public final static int GENDER_FEMALE = 2;
 
-        private static final String TEXT_TYPE = " TEXT";
-        private static final String INTEGER_TYPE = " INTEGER";
-        private static final String COMMA_SEP = ",";
+        public static final String TEXT_TYPE = " TEXT";
+        public static final String INTEGER_TYPE = " INTEGER";
+        public static final String COMMA_SEP = ",";
 
         // Create command for creating the new SQLite table.
-        private static final String SQL_CREATE_ENTRIES =
+        public static final String SQL_CREATE_ENTRIES =
                 "CREATE TABLE " + PetEntry.TABLE_NAME + " (" +
                         PetEntry.COLUMN_ID + " INTEGER PRIMARY KEY," +
                         PetEntry.COLUMN_PET_NAME + TEXT_TYPE + COMMA_SEP +
@@ -41,7 +41,7 @@ public final class PetContract {
                         PetEntry.COLUMN_PET_WEIGHT + INTEGER_TYPE + " )";
 
         // DELETE command for deleting the table.
-        private static final String SQL_DELETE_ENTRIES =
+        public static final String SQL_DELETE_ENTRIES =
                 "DROP TABLE IF EXISTS " + PetEntry.TABLE_NAME;
     }
 }
