@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.example.android.pets;
 
 import android.content.ContentValues;
@@ -117,13 +102,10 @@ public class CatalogActivity extends AppCompatActivity {
      */
     private void displayDatabaseInfo() {
 
-        // Create and/or open a database to read from it
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
         String[] projection = {
-                PetContract.PetEntry.COLUMN_ID,
+                PetContract.PetEntry._ID,
                 PetContract.PetEntry.COLUMN_PET_NAME,
                 PetContract.PetEntry.COLUMN_PET_BREED,
                 PetContract.PetEntry.COLUMN_PET_GENDER,
@@ -135,15 +117,11 @@ public class CatalogActivity extends AppCompatActivity {
         TextView displayView = findViewById(R.id.text_view_pet);
 
 
-        try (Cursor cursor = db.query(
-                PetContract.PetEntry.TABLE_NAME,  // The table to query
-                projection,                       // The columns to return
-                null,                    // The columns for the WHERE clause
-                null,                 // The values for the WHERE clause
-                null,                    // don't group the rows
-                null,                     // don't filter by row groups
-                null                     // The sort order
-        )) {
+        try (Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, projection,
+                null,
+                null,
+                "ASD")
+        ) {
             // Create a header in the Text View that looks like this:
             //
             // The pets table contains <number of rows in Cursor> pets.
@@ -159,7 +137,7 @@ public class CatalogActivity extends AppCompatActivity {
                     PetContract.PetEntry.COLUMN_PET_WEIGHT + "\n");
 
             // Figure out the index of each column
-            int idColumnIndex = cursor.getColumnIndex(PetContract.PetEntry.COLUMN_ID);
+            int idColumnIndex = cursor.getColumnIndex(PetContract.PetEntry._ID);
             int nameColumnIndex = cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_NAME);
             int breedColumnIndex = cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_BREED);
             int genderColumnIndex = cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_GENDER);
