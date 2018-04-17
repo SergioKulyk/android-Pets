@@ -100,13 +100,5 @@ public final class PetContract {
                     gender == GENDER_MALE ||
                     gender == GENDER_FEMALE;
         }
-
-        /**
-         * Return true if the weight of the pet is
-         * grater than 0 or equal to 0.
-         */
-        public static boolean isValidWeight(Integer weight) {
-            return weight >= 0;
-        }
     }
 }
