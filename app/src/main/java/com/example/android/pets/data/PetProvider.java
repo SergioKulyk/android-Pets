@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 /**
@@ -14,13 +15,19 @@ import android.util.Log;
  */
 public class PetProvider extends ContentProvider {
 
-    /** Tag for the log messages */
+    /**
+     * Tag for the log messages
+     */
     public static final String LOG_TAG = PetProvider.class.getSimpleName();
 
-    /** URI matcher code for the content URI for the pets table */
+    /**
+     * URI matcher code for the content URI for the pets table
+     */
     private static final int PETS = 100;
 
-    /** URI matcher code for the content URI for a single pet in the pets table */
+    /**
+     * URI matcher code for the content URI for a single pet in the pets table
+     */
     private static final int PET_ID = 101;
 
     /**
@@ -30,7 +37,7 @@ public class PetProvider extends ContentProvider {
      */
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        // Static initializer. This is run the first time anything is called from this class.
+    // Static initializer. This is run the first time anything is called from this class.
     static {
         // The calls to addURI() go here, for all of the content URI patterns that the provider
         // should recognize. All paths added to the UriMatcher have a corresponding code to return
@@ -69,24 +76,27 @@ public class PetProvider extends ContentProvider {
      * Perform the query for the given URI. Use the given projection, selection, selection arguments, and sort order.
      */
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
+        // Get readable database
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
+        // Cursor object for getting values from database rows.
         Cursor cursor;
 
         int match = sUriMatcher.match(uri);
-
         switch (match) {
             case PETS:
+                // Get data from the database by current parameters.
                 cursor = db.query(PetContract.PetEntry.TABLE_NAME, projection, null, null,
                         null, null, sortOrder);
                 break;
             case PET_ID:
                 projection = new String[]{PetContract.PetEntry._ID, PetContract.PetEntry.COLUMN_PET_NAME};
                 selection = PetContract.PetEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri))};
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
+                // Get data from the database by current parameters.
                 cursor = db.query(PetContract.PetEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
@@ -100,14 +110,14 @@ public class PetProvider extends ContentProvider {
      * Insert new data into the provider with the given ContentValues.
      */
     @Override
-    public Uri insert(Uri uri, ContentValues contentValues) {
+    public Uri insert(@NonNull Uri uri, ContentValues contentValues) {
         // Get code according to uri.
         int match = sUriMatcher.match(uri);
 
         switch (match) {
             case PETS:
                 // Insert pet into database.
-                 return insertPet(uri, contentValues);
+                return insertPet(uri, contentValues);
             default:
                 // Uri is not supported.
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
@@ -155,23 +165,93 @@ public class PetProvider extends ContentProvider {
      * Updates the data at the given selection and selection arguments, with the new ContentValues.
      */
     @Override
-    public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
-        return 0;
+    public int update(@NonNull Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            case PET_ID:
+                // For the PET_ID code, extract out the ID from the URI,
+                // so we know which row to update. Selection will be "_id=?" and selection
+                // arguments will be a String array containing the actual ID.
+                selection = PetContract.PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updatePet(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+
+        // If the {@link PetEntry#COLUMN_PET_NAME} is present,
+        // check that name is not null.
+        if (values.containsKey(PetContract.PetEntry.COLUMN_PET_NAME)) {
+            String name = values.getAsString(PetContract.PetEntry.COLUMN_PET_NAME);
+            if (name == null) {
+                throw new IllegalArgumentException("Pet requires name");
+            }
+        }
+
+        // If the {@link PetEntry#COLUMN_PET_GENDER} is present
+        // check that gender is the {@link GENDER_UNKNOWN} or {@link GENDER_MALE} or {@link GENDER_FEMALE}.
+        if (values.containsKey(PetContract.PetEntry.COLUMN_PET_GENDER)) {
+            Integer gender = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_GENDER);
+            if (gender == null || !PetContract.PetEntry.isValidGender(gender)) {
+                throw new IllegalArgumentException("Pet requires gender");
+            }
+        }
+
+        // If the {@link PetEntry#COLUMN_PET_WEIGHT} is present
+        // check that weight is grater than 0 or equal 0.
+        if (values.containsKey(PetContract.PetEntry.COLUMN_PET_GENDER)) {
+            Integer weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
+            if (weight == null || weight < 0) {
+                throw new IllegalArgumentException("Pet requires weight");
+            }
+        }
+
+        // If there is not values to update, then don't try to update the database.
+        if (values.size() == 0) {
+            return 0;
+        }
+
+        // Otherwise, get writable database to update the data.
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Update data of the current dog in database, return id of row
+        // where updating was.
+        return db.update(PetContract.PetEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 
     /**
      * Delete the data at the given selection and selection arguments.
      */
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+        // Get  writable database
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case PETS:
+                // Delete all rows that match the selection and selection args.
+                return db.delete(PetContract.PetEntry.TABLE_NAME, selection, selectionArgs);
+            case PET_ID:
+                // Delete a single row given by ID int the URI
+                selection = PetContract.PetEntry._ID + "=?";
+                selectionArgs = new String[]{ String.valueOf(ContentUris.parseId(uri)) };
+                return db.delete(PetContract.PetEntry.TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
     }
 
     /**
      * Returns the MIME type of data for the content URI.
      */
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return null;
     }
 }
