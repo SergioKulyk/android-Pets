@@ -131,7 +131,7 @@ public class PetProvider extends ContentProvider {
         // Check that weight is grater than 0 or equal 0.
         // 0 is the value by default.
         Integer weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
-        if (weight == null || !PetContract.PetEntry.isValidWeight(weight)) {
+        if (weight == null || weight < 0) {
             throw new IllegalArgumentException("Pet requires weight");
         }
 
