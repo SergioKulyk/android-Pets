@@ -114,12 +114,34 @@ public class PetProvider extends ContentProvider {
         }
     }
 
-    private Uri insertPet(Uri uri, ContentValues contentValues) {
+    private Uri insertPet(Uri uri, ContentValues values) {
+
+        // Check that name is not null.
+        String name = values.getAsString(PetContract.PetEntry.COLUMN_PET_NAME);
+        if (name == null) {
+            throw new IllegalArgumentException("Pet requires name");
+        }
+
+        // Check that gender is MALE or FEMALE or UNKNOWN.\.
+        int gender = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_GENDER);
+        if (gender != PetContract.PetEntry.GENDER_UNKNOWN &&
+                gender != PetContract.PetEntry.GENDER_MALE &&
+                gender != PetContract.PetEntry.GENDER_FEMALE) {
+            throw new IllegalArgumentException("Pet requires gender");
+        }
+
+        // Check that weight is grater than 0 or equal 0.
+        // 0 is the value by default.
+        int weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
+        if (weight >= 0) {
+            throw new IllegalArgumentException("Pet requires weight");
+        }
+
         // Get database in wrote mode.
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Insert pet into database and return pet id.
-        long id = db.insert(PetContract.PetEntry.TABLE_NAME, null, contentValues);
+        long id = db.insert(PetContract.PetEntry.TABLE_NAME, null, values);
 
         // If ID is -1, then insertion failed. Log an error and return null;
         if (id == -1) {
