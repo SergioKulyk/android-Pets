@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * {@link ContentProvider} for Pets app.
@@ -78,7 +79,7 @@ public class PetProvider extends ContentProvider {
 
         switch (match) {
             case PETS:
-                cursor = db.query(PetContract.PetEntry.TABLE_NAME, projection, selection, selectionArgs,
+                cursor = db.query(PetContract.PetEntry.TABLE_NAME, projection, null, null,
                         null, null, sortOrder);
                 break;
             case PET_ID:
@@ -100,7 +101,34 @@ public class PetProvider extends ContentProvider {
      */
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
-        return null;
+        // Get code according to uri.
+        int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case PETS:
+                // Insert pet into database.
+                 return insertPet(uri, contentValues);
+            default:
+                // Uri is not supported.
+                throw new IllegalArgumentException("Insertion is not supported for " + uri);
+        }
+    }
+
+    private Uri insertPet(Uri uri, ContentValues contentValues) {
+        // Get database in wrote mode.
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Insert pet into database and return pet id.
+        long id = db.insert(PetContract.PetEntry.TABLE_NAME, null, contentValues);
+
+        // If ID is -1, then insertion failed. Log an error and return null;
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to inset row for " + uri);
+            return null;
+        }
+
+        // Return the new URL with the ID (of the newly insertion row) appended at the end.
+        return ContentUris.withAppendedId(uri, id);
     }
 
     /**
