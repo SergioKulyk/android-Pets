@@ -122,18 +122,16 @@ public class PetProvider extends ContentProvider {
             throw new IllegalArgumentException("Pet requires name");
         }
 
-        // Check that gender is MALE or FEMALE or UNKNOWN.\.
-        int gender = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_GENDER);
-        if (gender != PetContract.PetEntry.GENDER_UNKNOWN &&
-                gender != PetContract.PetEntry.GENDER_MALE &&
-                gender != PetContract.PetEntry.GENDER_FEMALE) {
+        // Check that gender is MALE or FEMALE or UNKNOWN.
+        Integer gender = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_GENDER);
+        if (gender == null || !PetContract.PetEntry.isValidGender(gender)) {
             throw new IllegalArgumentException("Pet requires gender");
         }
 
         // Check that weight is grater than 0 or equal 0.
         // 0 is the value by default.
-        int weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
-        if (weight >= 0) {
+        Integer weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
+        if (weight == null || !PetContract.PetEntry.isValidWeight(weight)) {
             throw new IllegalArgumentException("Pet requires weight");
         }
 
