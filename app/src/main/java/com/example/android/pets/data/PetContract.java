@@ -90,5 +90,23 @@ public final class PetContract {
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
+
+        /**
+         * Return true if gender of the pet is
+         * the same to male or female or unknown breed.
+         */
+        public static boolean isValidGender(int gender) {
+            return gender == GENDER_UNKNOWN ||
+                    gender == GENDER_MALE ||
+                    gender == GENDER_FEMALE;
+        }
+
+        /**
+         * Return true if the weight of the pet is
+         * grater than 0 or equal to 0.
+         */
+        public static boolean isValidWeight(Integer weight) {
+            return weight >= 0;
+        }
     }
 }
