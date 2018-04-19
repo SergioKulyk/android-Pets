@@ -1,6 +1,7 @@
 package com.example.android.pets;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -63,6 +65,21 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         // Set cursor adapter for ListView to pet representation.
         listView.setAdapter(mCursorAdapter);
 
+        // Set up the on list item click listener
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Set intent to move to the EditorActivity.
+                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+
+                Uri uri = ContentUris.withAppendedId(PetContract.PetEntry.CONTENT_URI, id);
+                // Set the URI ont the data field of the intent.
+                intent.setData(uri);
+
+                // Launch the {@link EditorActivity} to display the data for the current pet.
+                startActivity(intent);
+            }
+        });
         // Kick of the loader.
         getLoaderManager().initLoader(PET_LOADER, null, this);
     }
