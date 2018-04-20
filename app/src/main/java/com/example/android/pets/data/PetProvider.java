@@ -92,7 +92,11 @@ public class PetProvider extends ContentProvider {
                         null, null, sortOrder);
                 break;
             case PET_ID:
-                projection = new String[]{PetContract.PetEntry._ID, PetContract.PetEntry.COLUMN_PET_NAME};
+                projection = new String[]{PetContract.PetEntry._ID,
+                        PetContract.PetEntry.COLUMN_PET_NAME,
+                        PetContract.PetEntry.COLUMN_PET_BREED,
+                        PetContract.PetEntry.COLUMN_PET_GENDER,
+                        PetContract.PetEntry.COLUMN_PET_WEIGHT};
                 selection = PetContract.PetEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
