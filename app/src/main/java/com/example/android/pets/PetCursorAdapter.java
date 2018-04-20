@@ -30,9 +30,9 @@ public class PetCursorAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
 
         // Find pet name TextView item by id "pet_name".
-        TextView petName = view.findViewById(R.id.pet_name);
+        TextView petName = view.findViewById(R.id.name);
         // Find pet name TextView item by id "pet_breed".
-        TextView petBreed = view.findViewById(R.id.pet_breed);
+        TextView petBreed = view.findViewById(R.id.summary);
 
         // Figure out the index of each column
         int idNameColumn = cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_NAME);
