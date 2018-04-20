@@ -267,8 +267,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             case R.id.action_delete:
                 // Delete pet from database
                 showDeleteConfirmationDialog();
-                // Close the activity.
-                finish();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
@@ -396,6 +394,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                         Toast.LENGTH_SHORT).show();
             }
         }
+
+        // Close the activity.
+        finish();
     }
 
     @Override
