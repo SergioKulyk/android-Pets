@@ -73,7 +73,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      */
     private Uri mCurrentPetUri;
 
-    /** Show that user has touched an item or not */
+    /**
+     * Show that user has touched an item or not
+     */
     private boolean mPetHasChanged;
 
     /**
@@ -187,7 +189,33 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         });
 
-        // Create an show the AlarmDialog
+        // Create and show the AlarmDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deletePet();
+            }
+        });
+
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -213,7 +241,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
-                // Do nothing for now
+                // Delete pet from database
+                showDeleteConfirmationDialog();
+                // Close the activity.
+                finish();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
@@ -248,12 +279,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         super.onPrepareOptionsMenu(menu);
         // If this is a new pet, hide the "Delete" menu item.
         if (mCurrentPetUri == null) {
-            MenuItem menuItem = findViewById(R.id.action_delete);
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
             menuItem.setVisible(false);
         }
         return true;
     }
 
+    /**
+     * Save pet into database.
+     */
     private void savePet() {
 
         // Read values from input fields.
@@ -270,7 +304,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         if (mCurrentPetUri == null &&
                 TextUtils.isEmpty(nameString) && TextUtils.isEmpty(breedString) &&
-                TextUtils.isEmpty(weightString) && mGender == PetContract.PetEntry.GENDER_UNKNOWN) {return;}
+                TextUtils.isEmpty(weightString) && mGender == PetContract.PetEntry.GENDER_UNKNOWN) {
+            return;
+        }
 
         // Create a ContentValues object where column names are the keys,
         // and Toto's pet attributes are the values.
@@ -281,7 +317,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, weight);
 
         if (mCurrentPetUri == null) {
-            // Insert a new row for pet in the database, returning the ID of that new row.
+            // Insert a new row for pet in the database, returning the URI of that new row.
             Uri newRowId = getContentResolver().insert(PetContract.PetEntry.CONTENT_URI, values);
 
             // Show a toast message depending on whether or not the insertion was successful
@@ -291,7 +327,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the insertion was successful and we can display a toast with the row ID.
-                Toast.makeText(this,  getString(R.string.editor_insert_pet_failed),
+                Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
                         Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -314,6 +350,30 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
     }
 
+
+    /**
+     * Perform the deletion of the pet in the database.
+     */
+    private void deletePet() {
+        // Only perform the delete if this is an existing pet.
+        if (mCurrentPetUri != null) {
+            // Call the ContentResolver to delete the pet at the given content URI.
+            // Pass in null for the selection and selection args because the mCurrentPetUri
+            // content URI already identifies the pet that we want.
+            int rowsDeleted = getContentResolver().delete(mCurrentPetUri, null, null);
+            // Show a toast message depending on whether or not the delete was successful.
+            if (rowsDeleted == 0) {
+                // If no rows were deleted, then there was an error with the delete.
+                Toast.makeText(this, getString(R.string.editor_delete_pet_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the delete was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_delete_pet_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // Since the editor shows all pet attributes, define a projection that contains
@@ -323,7 +383,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 PetContract.PetEntry.COLUMN_PET_NAME,
                 PetContract.PetEntry.COLUMN_PET_BREED,
                 PetContract.PetEntry.COLUMN_PET_GENDER,
-                PetContract.PetEntry.COLUMN_PET_WEIGHT };
+                PetContract.PetEntry.COLUMN_PET_WEIGHT};
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
